@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techcamp Applab Adventure - Image Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --card-bg: #1e293b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #334155;
+            --secondary-bg: #475569;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 9999px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        #searchInput:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            border-color: var(--accent-color);
+        }
+
+        .image-wrapper {
+            position: relative;
+            padding-top: 75%; /* 4:3 aspect ratio */
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            background: repeating-conic-gradient(#1e293b 0% 25%, transparent 0% 50%) 50% / 20px 20px;
+        }
+
+        .card-content {
+            padding: 1.25rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .image-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            word-break: break-all;
+            color: #cbd5e1;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        .copy-btn.copied {
+            background-color: #10b981; /* green result */
+        }
+        
+        #loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            padding: 3rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        .footer {
+            margin-top: 4rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Asset Gallery</h1>
+            <p class="subtitle">Search and copy raw image URLs for your Applab projects</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search for images (e.g. unicorn, piggy, cat)...">
+        </div>
+
+        <div id="loading">Loading images...</div>
+        <div class="gallery" id="imageGallery"></div>
+        
+        <div class="footer">
+            Techcamp Applab Adventure Assets
+        </div>
+    </div>
+
+    <script>
+        const REPO_BASE = "https://raw.githubusercontent.com/ibrezm1/Techcamp-ApplabAdventure/refs/heads/main/";
+        let allImages = [];
+
+        const gallery = document.getElementById('imageGallery');
+        const searchInput = document.getElementById('searchInput');
+        const loading = document.getElementById('loading');
+
+        async function loadImages() {
+            try {
+                const response = await fetch('images.json');
+                if (!response.ok) throw new Error('Failed to load images.json');
+                allImages = await response.json();
+                
+                loading.classList.add('hidden');
+                renderGallery(allImages);
+            } catch (error) {
+                console.error('Error:', error);
+                loading.textContent = 'Error loading images. Please try again.';
+            }
+        }
+
+        function renderGallery(images) {
+            gallery.innerHTML = '';
+            
+            if (images.length === 0) {
+                gallery.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #94a3b8; padding: 2rem;">No images found matching your search.</div>';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+
+            images.forEach(imagePath => {
+                const rawUrl = `${REPO_BASE}${imagePath}?raw=true`;
+                const fileName = imagePath.split('/').pop();
+                
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                card.innerHTML = `
+                    <div class="image-wrapper">
+                        <img src="${imagePath}" alt="${fileName}" loading="lazy">
+                    </div>
+                    <div class="card-content">
+                        <div class="image-name" title="${imagePath}">${imagePath}</div>
+                        <button class="copy-btn" onclick="copyToClipboard('${rawUrl}', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy Raw URL
+                        </button>
+                    </div>
+                `;
+                
+                fragment.appendChild(card);
+            });
+
+            gallery.appendChild(fragment);
+        }
+
+        window.copyToClipboard = async function(text, btnElement) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalHtml = btnElement.innerHTML;
+                
+                btnElement.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Copied!
+                `;
+                btnElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHtml;
+                    btnElement.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                
+                // Fallback for older browsers
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const originalHtml = btnElement.innerHTML;
+                    btnElement.innerHTML = `Copied!`;
+                    btnElement.classList.add('copied');
+                    setTimeout(() => {
+                        btnElement.innerHTML = originalHtml;
+                        btnElement.classList.remove('copied');
+                    }, 2000);
+                } catch (err) {
+                    alert('Failed to copy. ' + text);
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = allImages.filter(img => img.toLowerCase().includes(searchTerm));
+            renderGallery(filtered);
+        });
+
+        // Initialize
+        loadImages();
+    </script>
+</body>
+</html>
