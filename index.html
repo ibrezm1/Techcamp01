@@ -213,6 +213,36 @@
             display: none !important;
         }
         
+        .links-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .link-chip {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .link-chip:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
         .footer {
             margin-top: 4rem;
             text-align: center;
@@ -234,6 +264,17 @@
 
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search for images (e.g. unicorn, piggy, cat)...">
+        </div>
+
+        <div class="links-section">
+            <a href="https://code.org/en-US/tools/app-lab" target="_blank" rel="noopener noreferrer" class="link-chip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Code.org App Lab
+            </a>
+            <a href="https://studio.code.org/courses/applab-intro/units/1/lessons/1/levels/1" target="_blank" rel="noopener noreferrer" class="link-chip">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                App Lab Intro Course
+            </a>
         </div>
 
         <div id="loading">Loading images...</div>
